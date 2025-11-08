@@ -53,13 +53,24 @@ synthetic_data = model.sample(100)
 If you found the resources in this repository useful, please link or cite our work:
 
 ``` bibtex
-@misc{zhang2025not,
-      title={Not All Features Deserve Attention: Graph-Guided Dependency Learning for Tabular Data Generation with Language Models}, 
-      author={Zheyu Zhang and Shuo Yang and Bardh Prenkaj and Gjergji Kasneci},
-      year={2025},
-      eprint={2507.18504},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL},
-      url={https://arxiv.org/abs/2507.18504}, 
+@inproceedings{zhang-etal-2025-features,
+    title = "Not All Features Deserve Attention: Graph-Guided Dependency Learning for Tabular Data Generation with Language Models",
+    author = "Zhang, Zheyu  and
+      Yang, Shuo  and
+      Prenkaj, Bardh  and
+      Kasneci, Gjergji",
+    editor = "Christodoulopoulos, Christos  and
+      Chakraborty, Tanmoy  and
+      Rose, Carolyn  and
+      Peng, Violet",
+    booktitle = "Findings of the Association for Computational Linguistics: EMNLP 2025",
+    month = nov,
+    year = "2025",
+    address = "Suzhou, China",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.findings-emnlp.330/",
+    pages = "6217--6242",
+    ISBN = "979-8-89176-335-7",
+    abstract = "Large Language Models (LLMs) have shown strong potential for tabular data generation by modeling textualized feature-value pairs. However, tabular data inherently exhibits sparse feature-level dependencies, where many feature interactions are structurally insignificant. This creates a fundamental mismatch as LLMs' self-attention mechanism inevitably distributes focus across all pairs, diluting attention on critical relationships, particularly in datasets with complex dependencies or semantically ambiguous features. To address this limitation, we propose GraDe (Graph-Guided Dependency Learning), a novel method that explicitly integrates sparse dependency graphs into LLMs' attention mechanism. GraDe employs a lightweight dynamic graph learning module guided by externally extracted functional dependencies, prioritizing key feature interactions while suppressing irrelevant ones. Our experiments across diverse real-world datasets demonstrate that GraDe outperforms existing LLM-based approaches by up to 12{\%} on complex datasets while achieving competitive results with state-of-the-art approaches in synthetic data quality. Our method is minimally intrusive yet effective, offering a practical solution for structure-aware tabular data modeling with LLMs."
 }
 ```
