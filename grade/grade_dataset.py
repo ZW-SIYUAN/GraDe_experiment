@@ -14,13 +14,16 @@ class GraDeDataset(Dataset):
     and tracks feature-to-token mappings to support functional dependency constraints.
     """
 
-    def set_tokenizer(self, tokenizer):
+    def set_tokenizer(self, tokenizer, shuffle_columns: bool = True):
         """Set the tokenizer for processing text
 
         Args:
             tokenizer: Tokenizer from HuggingFace
+            shuffle_columns: If False, columns are always presented in their
+                original order (fixed-order training/generation).
         """
         self.tokenizer = tokenizer
+        self.shuffle_columns = shuffle_columns
 
     def _getitem(self, key, decoded=True, **kwargs):
         """Get item from tabular data with feature-to-token mapping
@@ -39,9 +42,9 @@ class GraDeDataset(Dataset):
         # Get original row data
         row = self._data.fast_slice(key, 1)
         
-        # Randomly shuffle column order
         shuffle_idx = list(range(row.num_columns))
-        random.shuffle(shuffle_idx)
+        if getattr(self, "shuffle_columns", True):
+            random.shuffle(shuffle_idx)
         
         # Build text and record feature positions
         full_text = ""

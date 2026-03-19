@@ -12,22 +12,22 @@ from tqdm import tqdm
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, GPT2Config
 
-from GraDe.grade.grade_start import (
+from .grade_start import (
     GReaTStart,
     CategoricalStart,
     ContinuousStart,
     RandomStart,
 )
-from GraDe.grade.grade_trainer import GraDeTrainer
-from GraDe.grade.grade_utils import (
+from .grade_trainer import GraDeTrainer
+from .grade_utils import (
     _array_to_dataframe,
     _get_column_distribution,
     _convert_tokens_to_text,
     _convert_text_to_tabular_data,
     bcolors,
 )
-from GraDe.grade.grade_model import TabDynamicGraphGPT2
-from GraDe.grade.grade_dataset import GraDeDataset, GraDeDataCollator
+from .grade_model import TabDynamicGraphGPT2
+from .grade_dataset import GraDeDataset, GraDeDataCollator
 
 
 class GraDe:
@@ -46,6 +46,7 @@ class GraDe:
         fd_alpha: float = 0.5,           # FD minimum edge weight
         fd_list: list = None,            # Functional dependency list
         only_update_graph: bool = False,  # Only update graph parameters
+        fixed_col_order: bool = False,    # Use fixed column order for training and sampling
         **train_kwargs,
     ):
         """Initialize GraDe model.
@@ -94,6 +95,7 @@ class GraDe:
         self.fd_alpha = fd_alpha
         self.fd_list = fd_list if fd_list is not None else []
         self.only_update_graph = only_update_graph
+        self.fixed_col_order = fixed_col_order
 
         # Training parameters
         self.experiment_dir = experiment_dir
@@ -134,6 +136,9 @@ class GraDe:
         
         # Save column names and update FD list
         self.column_names = df.columns.tolist()
+        # For fixed-order generation, save the first column's distribution
+        if self.fixed_col_order:
+            self.first_col_dist = _get_column_distribution(df, self.columns[0])
         if fd_list is not None:
             self.fd_list = fd_list
             self.model.fd_list = fd_list
@@ -162,7 +167,7 @@ class GraDe:
         # Prepare dataset and trainer
         logging.info("Converting data to dataset...")
         great_ds = GraDeDataset.from_pandas(df)
-        great_ds.set_tokenizer(self.tokenizer)
+        great_ds.set_tokenizer(self.tokenizer, shuffle_columns=not self.fixed_col_order)
 
         # Column-aware data collator
         class ColumnAwareDataCollator(GraDeDataCollator):
@@ -225,6 +230,18 @@ class GraDe:
         Returns:
             DataFrame with generated samples
         """
+        # Fixed-order generation: always start from the first column so the
+        # prompt matches the fixed-order training distribution.
+        if self.fixed_col_order and self.columns is not None:
+            first_col = self.columns[0]
+            if start_col and start_col != first_col:
+                logging.warning(
+                    "fixed_col_order=True: overriding start_col '%s' → '%s' (first column)",
+                    start_col, first_col,
+                )
+            start_col = first_col
+            start_col_dist = getattr(self, "first_col_dist", self.conditional_col_dist)
+
         great_start = self._get_start_sampler(start_col, start_col_dist)
         self.model.to(device)
         dfs = []

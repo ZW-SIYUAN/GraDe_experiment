@@ -304,6 +304,7 @@ class TabDynamicGraphGPT2(GPT2LMHeadModel):
         return_dict=None,
         feature_to_tokens=None,
         column_names=None,
+        **kwargs,  # absorb extra args added in newer transformers (e.g. cache_position)
     ):
         # Call parent forward to get base outputs
         outputs = super().forward(
@@ -319,6 +320,7 @@ class TabDynamicGraphGPT2(GPT2LMHeadModel):
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
+            **kwargs,
         )
         
         # Add regularization losses during training
